@@ -1,0 +1,27 @@
+body {
+    background-color: #fafafa;
+}
+
+.navbar-brand {
+    font-family: 'Arial', sans-serif;
+    font-size: 22px;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-header {
+    background: white;
+    border-bottom: none;
+}
+
+.card-img-top {
+    border-radius: 0;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.rounded-circle {
+    object-fit: cover;
+}
