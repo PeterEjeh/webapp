@@ -1,0 +1,62 @@
+body {
+    background-color: #fafafa;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Navbar Styling */
+.navbar {
+    background-color: white;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Profile Pictures */
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Feed Styling */
+.feed-container {
+    max-width: 600px;
+    margin: auto;
+}
+
+/* Post Styling */
+.post {
+    background-color: white;
+    border: 1px solid #dbdbdb;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.post img {
+    width: 100%;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.post .post-header {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.post .post-header img {
+    margin-right: 10px;
+}
+
+.post .post-footer {
+    padding: 10px;
+}
+
+.post .post-icons i {
+    font-size: 24px;
+    margin-right: 10px;
+    cursor: pointer;
+}

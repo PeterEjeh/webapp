@@ -1,22 +1,71 @@
-{% extends "base.html" %}
+{% extends "posts/base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="height: 100vh; background: linear-gradient(135deg, #ff9a9e, #fad0c4);">
-    <div class="login-container bg-white p-4 rounded shadow-lg">
-        <h3 class="text-center text-danger">PetesGram</h3>
-        <form method="POST">
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-lg" style="width: 400px; border-radius: 12px;">
+        <h3 class="text-center mb-3 fw-bold">Welcome Back</h3>
+
+        <!-- Display error messages (like incorrect password) -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger text-center py-2">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" class="d-grid gap-3">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-danger w-100">Login</button>
+
+            {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ field.label }}</label>
+                    <div class="input-group">
+                        {{ field }}
+                        {% if field.name == "password" %}
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+                    
+                    {% if field.errors %}
+                        <div class="text-danger small">
+                            {% for error in field.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
-        <p class="text-center mt-3">Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+
+        <!-- Forgot Password -->
+        <div class="text-center mt-3">
+            <a href="{% url 'password_reset' %}" class="text-muted small">Forgot Password?</a>
+        </div>
+
+        <!-- Sign Up Link -->
+        <div class="text-center mt-3">
+            <small>Don't have an account? <a href="{% url 'register' %}" class="text-primary">Sign Up</a></small>
+        </div>
     </div>
 </div>
+
+<!-- JavaScript to Toggle Password Visibility -->
+<script>
+    document.getElementById("togglePassword").addEventListener("click", function() {
+        const passwordField = document.querySelector("input[name='password']");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            this.innerHTML = '<i class="fa fa-eye-slash"></i>';
+        } else {
+            passwordField.type = "password";
+            this.innerHTML = '<i class="fa fa-eye"></i>';
+        }
+    });
+</script>
+
 {% endblock %}

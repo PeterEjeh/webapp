@@ -1,9 +1,11 @@
+from django import views
 from django.urls import path
-from .views import feed, create_post, like_post, comment_post
+from .views import feed
+from . import views
 
 urlpatterns = [
     path('', feed, name='feed'),
-    path('new/', create_post, name='create_post'),
-    path('like/<int:post_id>/', like_post, name='like_post'),
-    path('comment/<int:post_id>/', comment_post, name='comment_post'),
+    path('like/<int:post_id>/', views.like_post, name='like_post'),
+    path('comment/<int:post_id>/', views.add_comment, name='add_comment'),
+    path('follow/<str:username>/', views.follow_user, name='follow_user'),
 ]

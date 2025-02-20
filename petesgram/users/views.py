@@ -1,109 +1,100 @@
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import login, logout, authenticate
-from django.shortcuts import render, redirect
-from .forms import RegisterForm
-from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-from posts.models import Post  # Assuming 'Post' is the model for user posts
-from django.contrib.auth.views import LoginView
+from posts.models import Post
+from .forms import UserRegisterForm, ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
-from .models import Profile  # Import UserProfile model
-from django.contrib import messages
-from django.http import JsonResponse
-
-
-
-
+from users.models import Profile
+from .forms import ProfileUpdateForm, UserUpdateForm
 
 
 def register(request):
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('feed')
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            return redirect('login')
     else:
-        form = RegisterForm()
+        form = UserRegisterForm()
     return render(request, 'users/register.html', {'form': form})
 
-def user_logout(request):
-    logout(request)
-    return redirect('login')
-
-
-# Profile Page View
-from users.models import Profile  # Import Profile model
-
 @login_required
-@login_required
-def profile(request, username):
-    user_profile = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(user=user_profile).order_by('-created_at')
+def profile(request):
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = ProfileUpdateForm(instance=request.user.profile)
+    return render(request, 'users/profile.html', {'form': form})
 
-    is_following = request.user in user_profile.profile.followers.all()
+def profile_view(request, username):
+    user = get_object_or_404(User, username=username)  
+    profile = user.profile
+    profile, created = Profile.objects.get_or_create(user=user)
+    posts = Post.objects.filter(user=user)
 
     context = {
-        'profile': user_profile.profile,
-        'user_profile': user_profile,
-        'posts': posts,
-        'post_count': posts.count(),
-        'is_following': is_following,
+        'user': user,
+        'profile': profile,
+        'followers_count': profile.followers.count(),
+        'following_count': profile.following.count(),
+        'posts_count': posts.count(),  
+        'posts': posts, 
     }
+
     return render(request, 'users/profile.html', context)
 
-
-
-
-# Follow/Unfollow User
 @login_required
-def follow_user(request, username):
-    user_to_follow = get_object_or_404(User, username=username)
-
-    # Ensure profile exists or create one
-    profile, created = Profile.objects.get_or_create(user=user_to_follow)
-
-    is_following = False  # Default state
-
-    if request.user in profile.followers.all():
-        profile.followers.remove(request.user)  # Unfollow
-    else:
-        profile.followers.add(request.user)  # Follow
-        is_following = True  # Update state
-
-    # Return JSON response for AJAX
-    return JsonResponse({'is_following': is_following})
-
-# Upload Post View
-@login_required
-def upload_post(request):
-    if request.method == 'POST' and request.FILES.get('media'):
-        media_file = request.FILES['media']
-        caption = request.POST.get('caption', '')  # Get caption from form
-
-        new_post = Post(
-            user=request.user,
-            caption=caption,  # Add the caption
-            image=media_file if media_file.content_type.startswith('image') else None,
-            video=media_file if media_file.content_type.startswith('video') else None
-        )
-        new_post.save()
-        return redirect('profile', username=request.user.username)
-
-    return render(request, 'posts/upload.html')
-class CustomLoginView(LoginView):
-    template_name = "users/login.html"
-
 def edit_profile(request):
-    return render(request, 'users/edit_profile.html')
+    if request.method == "POST":
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect("profile", username=request.user.username)  # Redirect to profile page
+
+    else:
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+
+    return render(request, "users/edit_profile.html", {"user_form": user_form, "profile_form": profile_form})
+
 
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-
-    if post.user == request.user:  # Ensure the user owns the post
+    if post.user == request.user:
         post.delete()
-        messages.success(request, "Post deleted successfully!")
-    else:
-        messages.error(request, "You are not allowed to delete this post!")
-
     return redirect('profile', username=request.user.username)
+
+
+from django.contrib.auth.views import (
+    PasswordResetView, 
+    PasswordResetDoneView, 
+    PasswordResetConfirmView, 
+    PasswordResetCompleteView
+)
+from django.urls import reverse_lazy
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'users/password_reset.html'
+    email_template_name = 'users/password_reset_email.html'
+    subject_template_name = 'users/password_reset_subject.txt'
+    success_url = reverse_lazy('password_reset_done')
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'users/password_reset_done.html'
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'users/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'users/password_reset_complete.html'
+

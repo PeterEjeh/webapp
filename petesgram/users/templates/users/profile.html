@@ -1,116 +1,247 @@
-{% extends "base.html" %}
-
+{% extends "posts/base.html" %}
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <!-- Profile Picture -->
-        <div class="col-md-3 text-center">
-            <img src="{{ profile.profile_pic.url }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
-        </div>
 
+<div class="container mt-5 px-4">
+    <div class="row g-4">
         <!-- User Info -->
-        <div class="col-md-9">
-            <div class="d-flex align-items-center">
-                <h2 class="me-3">{{ user.username }}</h2>
-
+        <div class="col-lg-9 col-12">
+            <div class="d-flex align-items-center flex-wrap gap-3 pb-3 border-bottom">
+                <h2 class="display-5 fw-bold text-dark me-3">{{ user.username }}</h2>
+                
                 {% if request.user == user %}
-                    <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary btn-sm">Edit Profile</a>
+                    <a href="{% url 'edit_profile' %}" 
+                       class="btn btn-outline-dark btn-sm rounded-pill px-3 py-1 transition-all hover-scale">
+                        Edit Profile
+                    </a>
                 {% else %}
-                    <form method="POST" action="{% url 'follow' user_profile.username %}">
-                {% csrf_token %}
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        {% if is_following %} Unfollow {% else %} Follow {% endif %}
-                     </button>
-</form>
-
+                    <form method="POST" action="{% url 'follow' user.username %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="btn {% if is_following %}btn-outline-danger{% else %}btn-dark{% endif %} btn-sm rounded-pill px-3 py-1 transition-all hover-scale">
+                            {% if is_following %} Unfollow {% else %} Follow {% endif %}
+                        </button>
+                    </form>
                 {% endif %}
             </div>
 
             <!-- Stats -->
-            <div class="d-flex mt-2">
-                <span class="me-4"><strong>{{ post_count }}</strong> posts</span>
-                <span class="me-4"><strong>{{ user.profile.followers.count }}</strong> followers</span>
-                <span><strong>{{ user.profile.following.count }}</strong> following</span>
+            <div class="d-flex gap-5 mt-4 text-muted">
+                <span><strong class="text-dark">{{ posts_count }}</strong> posts</span>
+                <span><strong class="text-dark">{{ followers_count }}</strong> followers</span>
+                <span><strong class="text-dark">{{ user.profile.following.count }}</strong> following</span>
             </div>
 
             <!-- Bio -->
-            <p class="mt-3">{{ user.profile.bio }}</p>
+            <p class="mt-3 text-secondary lead">{{ user.profile.bio }}</p>
         </div>
     </div>
 
-    <!-- Upload Button (for own profile) -->
+    <!-- Upload Button -->
     {% if request.user == user %}
-    <div class="text-center my-4">
-        <a href="{% url 'upload' %}" class="btn btn-danger">Upload Photo/Video</a>
+    <div class="text-center my-5">
+        <a href="{% url 'upload' %}" 
+           class="btn btn-dark btn-lg rounded-pill px-4 py-2 transition-all hover-scale shadow-sm">
+            Upload Photo/Video
+        </a>
     </div>
     {% endif %}
 
-    <!-- User Posts in Grid Layout -->
-    <div class="row mt-4">
+    <!-- Posts Grid -->
+    <div class="row g-4 mt-4">
         {% for post in posts %}
-            <div class="col-md-6 col-lg-4 col-sm-12 mb-4">  <!-- 3 columns on desktop, 2 on tablet, 1 on mobile -->
-                <div class="card shadow-sm">
-                    <!-- Post Content -->
+            <div class="col-md-4 col-sm-6 col-12">
+                <div class="card border-0 shadow-sm overflow-hidden transition-all hover-lift">
                     {% if post.image %}
-                        <img src="{{ post.image.url }}" alt="Post Image" class="card-img-top" style="height: 500px; object-fit: cover;">
+                        <img src="{{ post.image.url }}" 
+                             class="card-img-top transition-all" 
+                             style="height: 350px; object-fit: cover; filter: brightness(0.95);">
                     {% elif post.video %}
-                        <video controls class="card-img-top" style="height: 500px; object-fit: cover;">
+                        <video controls 
+                               class="card-img-top transition-all" 
+                               style="height: 350px; object-fit: cover; filter: brightness(0.95);">
                             <source src="{{ post.video.url }}" type="video/mp4">
-                            Your browser does not support the video tag.
                         </video>
                     {% endif %}
 
-                  <div class="card-body">
+                    <div class="card-body p-3">
                         {% if post.caption %}
-                            <p class="card-text font-weight-bold text-dark mb-3">{{ post.caption }}</p>
+                            <p class="card-text fw-semibold text-dark mb-2">{{ post.caption }}</p>
                         {% else %}
-                            <p class="text-muted">No caption</p>
+                            <p class="text-muted small fst-italic">No caption</p>
                         {% endif %}
 
-                        <!-- Embedded Dropdown Menu -->
-                        <div class="dropdown text-end">
-                            <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="postOptions{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                &#x22EE; <!-- Three Dots -->
+                        <!-- Action Menu and Counts -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="action-buttons">
+                                <!-- Like Button and Count -->
+                                <form action="{% url 'like_post' post.id %}" method="post" class="d-inline like-form" data-post-id="{{ post.id }}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link text-danger p-0 me-3">
+                                        <i class="fas fa-heart {% if request.user in post.likes.all %}liked{% endif %}"></i>
+                                        <span class="likes-count">{{ post.likes_count }}</span>
+                                    </button>
+                                </form>
+
+                                <!-- Comment Count -->
+                                <a href="#comment-{{ post.id }}" 
+                                   class="btn btn-link text-secondary p-0 me-3" 
+                                   data-bs-toggle="collapse">
+                                    <i class="far fa-comment"></i>
+                                    <span>{{ post.comments.count }}</span>
+                                </a>
+
+                                <!-- Share Button -->
+                                <button class="btn btn-link text-secondary p-0 share-btn" 
+                                        onclick="copyToClipboard('{{ request.build_absolute_uri }}post/{{ post.id }}/')">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Menu -->
+                        <div class="dropdown position-absolute end-0 top-0 m-2">
+                            <button class="btn btn-light btn-sm shadow-sm transition-all" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                ⋮
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="postOptions{{ post.id }}">
+                            <ul class="dropdown-menu shadow border-0">
                                 <li>
-                                    <button class="dropdown-item" onclick="copyToClipboard('{{ request.build_absolute_uri }}')">
-                                        📋 Copy Link
+                                    <button class="dropdown-item small" 
+                                            onclick="copyToClipboard('{{ request.build_absolute_uri }}')">
+                                        <i class="bi bi-clipboard me-2"></i> Copy Link
                                     </button>
                                 </li>
                                 <li>
                                     {% if post.image %}
-                                        <a href="{{ post.image.url }}" class="dropdown-item" download>⬇️ Download</a>
+                                        <a href="{{ post.image.url }}" 
+                                           class="dropdown-item small" 
+                                           download>
+                                            <i class="bi bi-download me-2"></i> Download
+                                        </a>
                                     {% elif post.video %}
-                                        <a href="{{ post.video.url }}" class="dropdown-item" download>⬇️ Download</a>
+                                        <a href="{{ post.video.url }}" 
+                                           class="dropdown-item small" 
+                                           download>
+                                            <i class="bi bi-download me-2"></i> Download
+                                        </a>
                                     {% endif %}
                                 </li>
                                 {% if post.user == request.user %}
                                     <li>
                                         <form action="{% url 'delete_post' post.id %}" method="POST">
                                             {% csrf_token %}
-                                            <button type="submit" class="dropdown-item text-danger">❌ Delete</button>
+                                            <button type="submit" 
+                                                    class="dropdown-item small text-danger">
+                                                    <i class="bi bi-trash me-2"></i> Delete
+                                            </button>
                                         </form>
                                     </li>
                                 {% endif %}
                             </ul>
                         </div>
+
+                        <!-- Comments Section (Optional, collapsible like in feed) -->
+                        <div class="collapse mt-2" id="comment-{{ post.id }}">
+                            {% for comment in post.comments.all %}
+                                <div class="small mt-1">
+                                    <strong>@{{ comment.user.username }}</strong> {{ comment.text }}
+                                    <small class="text-muted">({{ comment.created_at|timesince }} ago)</small>
+                                </div>
+                            {% empty %}
+                                <p class="small text-muted">No comments yet.</p>
+                            {% endfor %}
+
+                            {% if request.user == post.user or request.user.is_authenticated %}
+                                <form action="{% url 'add_comment' post.id %}" method="post" class="mt-2">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <input type="text" name="comment_text" class="form-control form-control-sm" placeholder="Add a comment..." required>
+                                        <button type="submit" class="btn btn-sm btn-primary">Post</button>
+                                    </div>
+                                </form>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         {% empty %}
-            <p class="text-center">No posts yet.</p>
+            <p class="text-center text-muted py-5">No posts yet.</p>
         {% endfor %}
     </div>
 </div>
 
-<!-- JavaScript for Copying Link -->
+<!-- Custom CSS -->
+<style>
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.btn {
+    font-weight: 500;
+}
+
+.card-img-top:hover {
+    filter: brightness(1.05);
+}
+
+.dropdown-menu {
+    min-width: 150px;
+}
+
+.liked {
+    color: #dc3545 !important;
+}
+
+.action-buttons .btn-link {
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn-link:hover {
+    opacity: 0.7;
+}
+</style>
+
+<!-- JavaScript -->
 <script>
 function copyToClipboard(url) {
     navigator.clipboard.writeText(url).then(() => {
         alert("Link copied to clipboard!");
     });
 }
+
+// AJAX for Likes
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const postId = this.dataset.postId;
+        fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const likeBtn = this.querySelector('button');
+            const likesCount = this.querySelector('.likes-count');
+            likesCount.textContent = data.likes_count;
+            likeBtn.querySelector('i').classList.toggle('liked');
+        });
+    });
+});
 </script>
 
 {% endblock %}
