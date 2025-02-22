@@ -1,13 +1,13 @@
 {% extends "posts/base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center vh-100">
-    <div class="card p-4 shadow-lg" style="width: 400px; border-radius: 12px;">
-        <h3 class="text-center mb-3 fw-bold">Welcome Back</h3>
+<div class="d-flex justify-content-center align-items-center vh-100" style="background-color: var(--bg-color);">
+    <div class="card p-4 shadow-lg" style="width: 400px; border-radius: 12px; background-color: var(--card-bg);">
+        <h3 class="text-center mb-3 fw-bold text-dark">Welcome Back</h3>
 
         <!-- Display error messages (like incorrect password) -->
         {% if form.non_field_errors %}
-            <div class="alert alert-danger text-center py-2">
+            <div class="alert alert-danger text-center py-2" style="background-color: #dc3545; color: var(--bg-color);">
                 {% for error in form.non_field_errors %}
                     {{ error }}
                 {% endfor %}
@@ -19,7 +19,7 @@
 
             {% for field in form %}
                 <div class="mb-3">
-                    <label class="form-label fw-bold">{{ field.label }}</label>
+                    <label class="form-label fw-bold text-dark">{{ field.label }}</label>
                     <div class="input-group">
                         {{ field }}
                         {% if field.name == "password" %}
@@ -28,7 +28,7 @@
                             </button>
                         {% endif %}
                     </div>
-                    
+
                     {% if field.errors %}
                         <div class="text-danger small">
                             {% for error in field.errors %}
@@ -53,6 +53,95 @@
         </div>
     </div>
 </div>
+
+<!-- Custom CSS -->
+<style>
+
+    form input, form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form button {
+    background-color: #0095f6;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+form button:hover {
+    background-color: #0077c2;
+}
+
+    /* Ensure text visibility in dark mode */
+    .text-dark {
+        color: var(--text-color) !important;
+    }
+
+    .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .text-primary {
+        color: var(--btn-primary) !important;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-label, .fw-bold {
+        color: var(--text-color);
+    }
+
+    .btn-primary {
+        background-color: var(--btn-primary);
+        border-color: var(--btn-primary);
+        color: var(--bg-color);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--btn-primary-dark, #0056b3);
+        border-color: var(--btn-primary-dark, #0056b3);
+        color: var(--bg-color);
+    }
+
+    .btn-outline-secondary {
+        color: var(--btn-outline);
+        border-color: var(--btn-outline);
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: var(--btn-outline);
+        color: var(--bg-color);
+        border-color: var(--btn-outline);
+    }
+
+    .alert-danger {
+        background-color: #dc3545;
+        color: var(--bg-color);
+        border-color: #dc3545;
+    }
+
+    .input-group .form-control {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        border-color: var(--btn-outline);
+    }
+
+    /* Define additional variables if not in base.html */
+    :root {
+        --btn-primary-dark: #0056b3;
+    }
+
+    [data-bs-theme="dark"] {
+        --btn-primary-dark: #0069d9;
+    }
+</style>
 
 <!-- JavaScript to Toggle Password Visibility -->
 <script>

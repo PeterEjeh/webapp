@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login
 from django.contrib.auth.models import User
 from posts.models import Post
 from .forms import UserRegisterForm, ProfileUpdateForm
@@ -14,8 +14,9 @@ def register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
-            user.save()
-            return redirect('login')
+            user = form.save()
+            login(request, user)
+            return redirect('feed')
     else:
         form = UserRegisterForm()
     return render(request, 'users/register.html', {'form': form})
@@ -33,7 +34,7 @@ def profile(request):
 
 def profile_view(request, username):
     user = get_object_or_404(User, username=username)  
-    profile = user.profile
+    profile: object = user.profile
     profile, created = Profile.objects.get_or_create(user=user)
     posts = Post.objects.filter(user=user)
 

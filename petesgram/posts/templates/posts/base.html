@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="auto">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,16 +15,16 @@
     <!-- External CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100" data-bs-theme="auto">
 
     <!-- Navbar -->
-    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-green">
+    <nav class="navbar fixed-top navbar-expand-lg" id="navbar">
         <div class="container-sm">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'feed' %}">
                 <img src="{% static 'images/Petesgram.jpg' %}" alt="PetesGram Logo" width="40" height="40" class="me-2" style="border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);">
                 <span class="fs-4">PetesGram</span>
             </a>
-            
+
             <div class="d-flex align-items-center">
                 {% if user.is_authenticated %}
                     <a href="{% url 'profile' user.username %}">
@@ -33,7 +33,7 @@
                     <!-- In your template -->
                     <form action="{% url 'logout' %}" method="post" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" 
+                        <button type="submit"
                                 class="btn logout-btn nav-link position-relative transition-all">
                             <span>Logout</span>
                             <i class="bi bi-box-arrow-right ms-2"></i>
@@ -48,98 +48,184 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container mt-4">
+    <div class="container mt-4 flex-grow-1">
         {% block content %}
         {% endblock %}
     </div>
 
+    <!-- Theme Toggle Button (Optional, for manual override) -->
+    <button id="themeToggle" class="btn btn-sm btn-outline-secondary position-fixed bottom-0 end-0 m-3" style="z-index: 1050;">
+        <i class="fas fa-sun" id="sunIcon"></i>
+        <i class="fas fa-moon" id="moonIcon" style="display: none;"></i>
+    </button>
+
     <style>
+        /* Root variables for light and dark modes */
+        :root {
+            /* Light Mode Defaults */
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --navbar-bg: #2c3e50; /* Darker green for consistency */
+            --navbar-text: #ffffff;
+            --card-bg: #f8f9fa;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --btn-primary: #007bff;
+            --btn-outline: #6c757d;
+        }
 
-body {
-    padding-top: 60px; /* Adjust based on navbar height */
-}
+        [data-bs-theme="dark"] {
+            /* Dark Mode Overrides */
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --navbar-bg: #2c3e50; /* Keep or adjust for dark mode */
+            --navbar-text: #ffffff;
+            --card-bg: #2d2d2d;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --btn-primary: #007bff;
+            --btn-outline: #a0a0a0;
+        }
 
-.navbar {
-    box-shadow: 0 2px 10px rgb(5, 38, 9);
-    z-index: 1000; /* Ensures navbar stays above other content */
-}
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-top: 60px; /* Adjust based on navbar height */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
-.bg-green {
-    background-color: rgb(2, 25, 2) !important;
-}
-.navbar-brand {
-    font-size: 1.5rem;
-    letter-spacing: 1px;
-}
+        #navbar {
+            background-color: var(--navbar-bg) !important;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            z-index: 1000;
+        }
 
-.nav-link {
-    color: #fff !important;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    transition: all 0.3s ease;
-}
+        .navbar-brand, .nav-link {
+            color: var(--navbar-text) !important;
+        }
 
-.nav-link:hover {
-    color: #ddd !important;
-}
+        .nav-link:hover {
+            color: #ddd !important;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--btn-primary);
+            border-color: var(--btn-primary);
+        }
+
+        .btn-outline-secondary, .btn-outline-dark {
+            color: var(--btn-outline);
+            border-color: var(--btn-outline);
+        }
+
+        .btn-outline-secondary:hover, .btn-outline-dark:hover {
+            color: var(--bg-color);
+            background-color: var(--btn-outline);
+            border-color: var(--btn-outline);
+        }
+
         .logout-btn {
-    padding: 4px 15px;
-    border: 3px solid #333;
-    border-radius: 20px;
-    color: #333;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    background: transparent;
-    overflow: hidden;
-    text-transform: uppercase;
-    font-size: 5px;
-}
+            padding: 4px 15px;
+            border: 3px solid var(--btn-outline);
+            border-radius: 20px;
+            color: var(--text-color);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            background: transparent;
+            overflow: hidden;
+            text-transform: uppercase;
+            font-size: 5px;
+        }
 
-.logout-btn:hover {
-    color: #fff;
-    border-color: #000;
-    background: #333;
-}
+        .logout-btn:hover {
+            color: var(--bg-color);
+            border-color: var(--btn-primary);
+            background: var(--btn-primary);
+        }
 
-.transition-all {
-    transition: all 0.3s ease-in-out;
-}
+        .logout-btn i {
+            font-size: 10px;
+            vertical-align: middle;
+            opacity: 0.8;
+        }
 
-.logout-btn i {
-    font-size: 10px;
-    vertical-align: middle;
-    opacity: 0.8;
-}
+        .logout-btn:hover i {
+            transform: translateX(5px);
+        }
 
-.logout-btn:hover i {
-    transform: translateX(5px);
-}
+        .logout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.4s;
+        }
 
-/* Optional: Add a subtle gradient effect */
-.logout-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: all 0.4s;
-}
+        .logout-btn:hover::before {
+            left: 100%;
+        }
 
-.logout-btn:hover::before {
-    left: 100%;
-}
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .logout-btn {
+                padding: 6px 15px;
+                font-size: 12px;
+            }
+        }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .logout-btn {
-        padding: 6px 15px;
-        font-size: 12px;
-    }
-}
+        /* Theme Toggle Button Styling */
+        #themeToggle {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #themeToggle i {
+            font-size: 16px;
+            transition: opacity 0.3s ease;
+        }
     </style>
-    <!-- Bootstrap JS -->
+
+    <!-- Bootstrap JS and Custom JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Detect system theme preference and apply
+        function updateTheme() {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-bs-theme', prefersDark ? 'dark' : 'light');
+            updateToggleIcons(prefersDark);
+        }
+
+        // Update theme toggle button icons
+        function updateToggleIcons(isDark) {
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            if (isDark) {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'inline';
+            } else {
+                sunIcon.style.display = 'inline';
+                moonIcon.style.display = 'none';
+            }
+        }
+
+        // Toggle theme manually
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            updateToggleIcons(newTheme === 'dark');
+        });
+
+        // Initial theme setup
+        updateTheme();
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
+    </script>
 </body>
 </html>

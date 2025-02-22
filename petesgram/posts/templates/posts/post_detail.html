@@ -1,0 +1,79 @@
+{% extends "posts/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg mx-auto" style="max-width: 600px; border-radius: 10px;">
+        <div class="card-body">
+            <!-- Post Owner -->
+            <div class="d-flex align-items-center mb-3">
+                <img src="{% static 'images/default-profile.png' %}" alt="User" class="rounded-circle" width="40" height="40">
+                <h5 class="ms-2 mb-0">{{ post.user.username }}</h5>
+            </div>
+
+            <!-- Post Image -->
+            <img src="{{ post.image.url }}" class="img-fluid rounded mb-3" alt="Post Image" style="border-radius: 10px;">
+
+            <!-- Caption & Timestamp -->
+            <p class="text-muted mb-2"><strong>{{ post.user.username }}</strong> {{ post.caption }}</p>
+            <small class="text-muted">{{ post.created_at|date:"F d, Y" }}</small>
+
+            <!-- Share Section -->
+            <div class="d-flex mt-3">
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboardAndTrack('{% url 'posts:post_detail' pk=post.pk %}', {{ post.pk }}, 'Direct')">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+
+                <a href="https://twitter.com/intent/tweet?url={% url 'posts:post_detail' pk=post.pk %}&text={{ post.caption }}"
+                   target="_blank" onclick="copyToClipboardAndTrack('{% url 'posts:post_detail' pk=post.pk %}', {{ post.pk }}, 'Twitter')"
+                   class="btn btn-sm btn-outline-primary mx-1">
+                    <i class="fab fa-twitter"></i> Twitter
+                </a>
+
+                <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'posts:post_detail' pk=post.pk %}"
+                   target="_blank" onclick="copyToClipboardAndTrack('{% url 'posts:post_detail' pk=post.pk %}', {{ post.pk }}, 'Facebook')"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="fab fa-facebook"></i> Facebook
+                </a>
+
+                <a href="https://api.whatsapp.com/send?text={% url 'posts:post_detail' pk=post.pk %}"
+                   target="_blank" onclick="copyToClipboardAndTrack('{% url 'posts:post_detail' pk=post.pk %}', {{ post.pk }}, 'WhatsApp')"
+                   class="btn btn-sm btn-outline-success mx-1">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Copy Link and Share Tracking -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> <!-- For CSRF token -->
+<script>
+    function getCSRFToken() {
+        return $('[name=csrfmiddlewaretoken]').val();
+    }
+
+    function copyToClipboardAndTrack(text, postId, platform = 'Direct') {
+        navigator.clipboard.writeText(text).then(() => {
+            toastr.success('Post link copied to clipboard!');
+            fetch('/posts/track-share/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: `post_id=${postId}&platform=${encodeURIComponent(platform)}`
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(err => console.error('Failed to track share:', err));
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            toastr.error('Failed to copy link. Please try again.');
+        });
+    }
+</script>
+
+{% endblock %}

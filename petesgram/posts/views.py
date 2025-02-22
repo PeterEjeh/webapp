@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Share
+
 from .models import Post, Like, Comment
 from .forms import PostForm  
 from .models import Post
@@ -60,21 +64,53 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_user(request, username):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Not authenticated'}, status=401)
+
     user_to_follow = get_object_or_404(User, username=username)
-    profile = request.user.profile
-    target_profile = user_to_follow.profile
-    
-    if profile.following.filter(id=user_to_follow.id).exists():
-        profile.following.remove(user_to_follow)
-        action = 'unfollowed'
-    else:
-        profile.following.add(user_to_follow)
-        action = 'followed'
-    
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'status': action,
-            'followers_count': target_profile.followers.count(),
-            'following': not profile.following.filter(id=user_to_follow.id).exists()
-        })
+    is_following = user_to_follow in request.user.profile.following.all()
+
+    if request.method == 'POST':
+        if is_following:
+            request.user.profile.following.remove(user_to_follow)
+            status = 'unfollowed'
+        else:
+            request.user.profile.following.add(user_to_follow)
+            status = 'followed'
+
+        # Handle AJAX request (used in your template for dynamic updates)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': status})
+
+        # Handle non-AJAX request (e.g., direct form submission)
+        current_path = request.path
+        if '/users/profile/' in current_path and username in current_path:
+            # If on a profile page, redirect back to the same profile
+            return redirect('users:profile', username=username)
+        else:
+            # If on the feed or elsewhere, redirect to the feed
+            return redirect('feed')
+
     return redirect('feed')
+
+
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    return render(request, 'post_detail.html', {'post': post})
+
+def user_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    return render(request, 'profile.html', {'user': user})
+
+def get_post_link(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    post_url = request.build_absolute_uri(post.get_absolute_url())
+    return JsonResponse({'url': post_url})
+
+def track_share(request):
+    return JsonResponse({'message': 'Profile share tracked successfully!'})
+
+def share_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    share_url = request.build_absolute_uri(reverse('post_detail', args=[post.id]))
+    return HttpResponse(f"Share this link: <a href='{share_url}'>{share_url}</a>")

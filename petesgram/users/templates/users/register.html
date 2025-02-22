@@ -1,19 +1,33 @@
 {% extends "posts/base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center vh-100">
-    <div class="card p-4 shadow" style="width: 400px;">
-        <h3 class="text-center mb-3">Join Petesgram</h3>
-        
-        <form method="POST" class="d-grid gap-2">
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; margin-top: 80px; background-color: var(--bg-color);">
+    <div class="card p-4 shadow-lg" style="width: 400px; border-radius: 10px; background-color: var(--card-bg);">
+
+        <h3 class="text-center mb-3 text-dark fw-bold">Join PetesGram</h3>
+
+        <!-- Django Form Errors -->
+        {% if form.errors %}
+            <div class="alert alert-danger" style="background-color: #dc3545; color: var(--bg-color);">
+                <ul class="mb-0">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="POST" class="d-grid gap-3" id="register-form">
             {% csrf_token %}
-            
+
             {% for field in form %}
                 <div class="mb-3">
-                    <label class="form-label fw-bold">{{ field.label }}</label>
+                    <label for="{{ field.id_for_label }}" class="form-label fw-bold text-dark">{{ field.label }}</label>
                     {{ field }}
                     {% if field.errors %}
-                        <div class="text-danger small">
+                        <div class="text-danger small mt-1">
                             {% for error in field.errors %}
                                 {{ error }}
                             {% endfor %}
@@ -21,13 +35,104 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            
-            <button type="submit" class="btn btn-primary w-100">Register</button>
+
+            <div id="password-mismatch" class="text-danger small mt-1 d-none">Passwords do not match.</div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">Register</button>
         </form>
-        
+
         <div class="text-center mt-3">
-            <small>Already have an account? <a href="{% url 'login' %}" class="text-primary">Login</a></small>
+            <small class="text-muted">Already have an account?
+                <a href="{% url 'login' %}" class="text-primary text-decoration-none">Login</a>
+            </small>
         </div>
     </div>
 </div>
+
+<!-- Custom CSS -->
+<style>
+        form input, form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+form button {
+    background-color: #0095f6;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+form button:hover {
+    background-color: #0077c2;
+}
+
+    /* Ensure text visibility in dark mode */
+    .text-dark {
+        color: var(--text-color) !important;
+    }
+
+    .text-muted {
+        color: var(--text-muted) !important;
+    }
+
+    .text-primary {
+        color: var(--btn-primary) !important;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-label, .fw-bold {
+        color: var(--text-color);
+    }
+
+    .btn-primary {
+        background-color: var(--btn-primary);
+        border-color: var(--btn-primary);
+        color: var(--bg-color);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--btn-primary-dark, #0056b3);
+        border-color: var(--btn-primary-dark, #0056b3);
+        color: var(--bg-color);
+    }
+
+    .alert-danger {
+        background-color: #dc3545;
+        color: var(--bg-color);
+        border-color: #dc3545;
+    }
+
+    /* Define additional variables if not in base.html */
+    :root {
+        --btn-primary-dark: #0056b3;
+    }
+
+    [data-bs-theme="dark"] {
+        --btn-primary-dark: #0069d9;
+    }
+</style>
+
+<!-- JavaScript for Password Validation -->
+<script>
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        const password1 = document.querySelector('input[name="password1"]').value;
+        const password2 = document.querySelector('input[name="password2"]').value;
+        const errorDiv = document.getElementById('password-mismatch');
+
+        if (password1 && password2 && password1 !== password2) {
+            e.preventDefault();
+            errorDiv.classList.remove('d-none');  // Show the error message
+        } else {
+            errorDiv.classList.add('d-none');  // Hide the error message
+        }
+    });
+</script>
 {% endblock %}

@@ -11,7 +11,6 @@ from .views import (
 )
 
 
-
 urlpatterns = [
     path('register/', register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
