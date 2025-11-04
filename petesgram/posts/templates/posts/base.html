@@ -12,6 +12,11 @@
     <!-- FontAwesome (Icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
+    <!-- Google Fonts (Poppins) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- External CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
@@ -21,14 +26,14 @@
     <nav class="navbar fixed-top navbar-expand-lg" id="navbar">
         <div class="container-sm">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'feed' %}">
-                <img src="{% static 'images/Petesgram.jpg' %}" alt="PetesGram Logo" width="40" height="40" class="me-2" style="border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);">
+                <img src="{% static 'images/Petesgram.jpg' %}" alt="PetesGram Logo" width="40" height="40" class="me-2">
                 <span class="fs-4">PetesGram</span>
             </a>
 
             <div class="d-flex align-items-center">
                 {% if user.is_authenticated %}
                     <a href="{% url 'profile' user.username %}">
-                        <img src="{{ user.profile.profile_picture.url }}" class="profile-pic me-1" style="width: 55px; height: 55px; border-radius: 50%;">
+                        <img src="{{ user.profile.profile_picture.url }}" class="profile-pic me-1">
                     </a>
                     <!-- In your template -->
                     <form action="{% url 'logout' %}" method="post" class="d-inline">
@@ -58,137 +63,6 @@
         <i class="fas fa-sun" id="sunIcon"></i>
         <i class="fas fa-moon" id="moonIcon" style="display: none;"></i>
     </button>
-
-    <style>
-        /* Root variables for light and dark modes */
-        :root {
-            /* Light Mode Defaults */
-            --bg-color: #ffffff;
-            --text-color: #000000;
-            --navbar-bg: #2c3e50; /* Darker green for consistency */
-            --navbar-text: #ffffff;
-            --card-bg: #f8f9fa;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --btn-primary: #007bff;
-            --btn-outline: #6c757d;
-        }
-
-        [data-bs-theme="dark"] {
-            /* Dark Mode Overrides */
-            --bg-color: #1a1a1a;
-            --text-color: #ffffff;
-            --navbar-bg: #2c3e50; /* Keep or adjust for dark mode */
-            --navbar-text: #ffffff;
-            --card-bg: #2d2d2d;
-            --shadow-color: rgba(0, 0, 0, 0.3);
-            --btn-primary: #007bff;
-            --btn-outline: #a0a0a0;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding-top: 60px; /* Adjust based on navbar height */
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        #navbar {
-            background-color: var(--navbar-bg) !important;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            z-index: 1000;
-        }
-
-        .navbar-brand, .nav-link {
-            color: var(--navbar-text) !important;
-        }
-
-        .nav-link:hover {
-            color: #ddd !important;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .btn-primary {
-            background-color: var(--btn-primary);
-            border-color: var(--btn-primary);
-        }
-
-        .btn-outline-secondary, .btn-outline-dark {
-            color: var(--btn-outline);
-            border-color: var(--btn-outline);
-        }
-
-        .btn-outline-secondary:hover, .btn-outline-dark:hover {
-            color: var(--bg-color);
-            background-color: var(--btn-outline);
-            border-color: var(--btn-outline);
-        }
-
-        .logout-btn {
-            padding: 4px 15px;
-            border: 3px solid var(--btn-outline);
-            border-radius: 20px;
-            color: var(--text-color);
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            background: transparent;
-            overflow: hidden;
-            text-transform: uppercase;
-            font-size: 5px;
-        }
-
-        .logout-btn:hover {
-            color: var(--bg-color);
-            border-color: var(--btn-primary);
-            background: var(--btn-primary);
-        }
-
-        .logout-btn i {
-            font-size: 10px;
-            vertical-align: middle;
-            opacity: 0.8;
-        }
-
-        .logout-btn:hover i {
-            transform: translateX(5px);
-        }
-
-        .logout-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: all 0.4s;
-        }
-
-        .logout-btn:hover::before {
-            left: 100%;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .logout-btn {
-                padding: 6px 15px;
-                font-size: 12px;
-            }
-        }
-
-        /* Theme Toggle Button Styling */
-        #themeToggle {
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        #themeToggle i {
-            font-size: 16px;
-            transition: opacity 0.3s ease;
-        }
-    </style>
 
     <!-- Bootstrap JS and Custom JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
