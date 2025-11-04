@@ -6,216 +6,260 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="feed-container">
-        <div class="posts-wrapper">
-            {% for post in posts %}
-                <article class="post-card post-loading">
-                    <!-- Post Header -->
-                    <div class="post-header d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <a href="{% url 'profile' post.user.username %}" class="d-flex align-items-center text-decoration-none">
-                                <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic-header me-3" alt="Profile">
-                                <span class="post-username">{{ post.user.username }}</span>
-                            </a>
-                        </div>
-
-                        {% if request.user != post.user %}
-                            <form action="{% url 'follow_user' post.user.username %}" method="post" class="d-inline follow-form" data-username="{{ post.user.username }}">
+<div class="feed-container">
+    {% for post in posts %}
+        <article class="post-card">
+            <!-- Post Header -->
+            <div class="post-header">
+                <a href="{% url 'profile' post.user.username %}" class="user-info">
+                    <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic" alt="{{ post.user.username }}">
+                    <span class="username">{{ post.user.username }}</span>
+                </a>
+                <button class="more-options-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% if request.user == post.user %}
+                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                    {% else %}
+                        <li>
+                            <form action="{% url 'follow_user' post.user.username %}" method="post" class="follow-form">
                                 {% csrf_token %}
-                                <button type="submit" class="action-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Follow/Unfollow">
+                                <button type="submit" class="dropdown-item">
                                     {% if post.user in request.user.profile.following.all %}
-                                        <i class="fas fa-user-check"></i>
+                                        <i class="fas fa-user-times me-2"></i>Unfollow
                                     {% else %}
-                                        <i class="fas fa-user-plus"></i>
+                                        <i class="fas fa-user-plus me-2"></i>Follow
                                     {% endif %}
                                 </button>
                             </form>
-                        {% endif %}
-                    </div>
-
-                    <!-- Post Media (Image/Video) -->
-                    <div class="card-body p-0 position-relative">
-                        {% if post.image %}
-                            <img src="{{ post.image.url }}" class="img-fluid w-100" alt="Post Image">
-                        {% elif post.video %}
-                            <div class="video-container position-relative">
-                                <video class="post-video img-fluid w-100" autoplay loop muted playsinline>
-                                    <source src="{{ post.video.url }}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                                <button class="video-play-btn position-absolute" onclick="togglePlay(this)">
-                                    <i class="fas fa-pause"></i>
-                                </button>
-                                <button class="video-control-btn position-absolute bottom-0 start-0 m-3 btn btn-dark btn-sm rounded-circle" onclick="toggleMute(this)">
-                                    <i class="fas fa-volume-mute"></i>
-                                </button>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Post Actions -->
-                    <div class="post-actions d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <!-- Like Button -->
-                            <form action="{% url 'like_post' post.id %}" method="post" class="d-inline like-form" data-post-id="{{ post.id }}">
-                                {% csrf_token %}
-                                <button type="submit" class="action-btn like-btn {% if request.user in post.likes.all %}liked{% endif %}" title="Like">
-                                    <i class="{% if request.user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
-                                </button>
-                            </form>
-
-                            <!-- Comment Button -->
-                            <button class="action-btn" data-bs-toggle="collapse" data-bs-target="#comment-{{ post.id }}" title="Comment">
-                                <i class="far fa-comment"></i>
-                            </button>
-
-                            <!-- Share Button -->
-                            <button class="action-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Share">
-                                <i class="far fa-paper-plane"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <button class="dropdown-item" onclick="copyPostLink('{{ post.pk }}')">
-                                    <i class="fas fa-link me-2"></i> Copy Link
-                                </button>
-                                <a class="dropdown-item" href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}" target="_blank">
-                                    <i class="fab fa-twitter me-2"></i> Share on Twitter
-                                </a>
-                                <a class="dropdown-item" href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" target="_blank">
-                                    <i class="fab fa-facebook me-2"></i> Share on Facebook
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Likes count -->
-                    <div class="post-likes">
-                        {{ post.likes_count }} like{% if post.likes_count != 1 %}s{% endif %}
-                    </div>
-
-                    <!-- Caption -->
-                    <div class="post-caption">
-                        <span class="post-username">{{ post.user.username }}</span>
-                        {{ post.caption }}
-                    </div>
-
-                    <!-- View all comments button -->
-                    {% if post.comments.count > 0 %}
-                    <button class="view-comments-btn action-btn" data-bs-toggle="collapse" data-bs-target="#comment-{{ post.id }}">
-                        View all {{ post.comments.count }} comment{% if post.comments.count != 1 %}s{% endif %}
-                    </button>
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-flag me-2"></i>Report</a></li>
                     {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" onclick="copyPostLink('{{ post.pk }}')"><i class="fas fa-link me-2"></i>Copy link</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-times me-2"></i>Cancel</a></li>
+                </ul>
+            </div>
 
-                    <!-- Comments Section -->
-                    <div class="post-comments collapse" id="comment-{{ post.id }}">
-                        {% for comment in post.comments.all %}
-                        <div class="comment">
-                            <span class="post-username">{{ comment.user.username }}</span>
-                            {{ comment.text }}
-                        </div>
-                        {% endfor %}
-                    </div>
+            <!-- Post Media -->
+            <div class="post-media">
+                {% if post.video %}
+                    <video class="media-content" loop muted playsinline onclick="toggleVideoPlay(this)">
+                        <source src="{{ post.video.url }}" type="video/mp4">
+                    </video>
+                    <button class="mute-btn" onclick="toggleMute(event)">
+                        <i class="fas fa-volume-mute"></i>
+                    </button>
+                {% elif post.image %}
+                    <img src="{{ post.image.url }}" class="media-content" alt="Post" ondblclick="handleDoubleTap(this)">
+                {% endif %}
+                <div class="like-animation">
+                    <i class="fas fa-heart"></i>
+                </div>
+            </div>
 
-                    <!-- Post time -->
-                    <div class="post-time">
-                        {{ post.created_at|timesince }} ago
-                    </div>
-
-                    <!-- Comment Form -->
-                    <form action="{% url 'add_comment' post.id %}" method="post" class="comment-form">
+            <!-- Post Actions -->
+            <div class="post-actions">
+                <div class="actions-left">
+                    <form action="{% url 'like_post' post.id %}" method="post" class="like-form" data-post-id="{{ post.id }}">
                         {% csrf_token %}
-                        <div class="d-flex align-items-center">
-                            <input type="text" name="comment_text" class="comment-input" placeholder="Add a comment..." required>
-                            <button type="submit" class="action-btn">
-                                <i class="far fa-paper-plane"></i>
-                            </button>
-                        </div>
+                        <button type="submit" class="action-btn like-btn {% if request.user in post.likes.all %}liked{% endif %}">
+                            <i class="{% if request.user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                        </button>
                     </form>
+                    <button class="action-btn" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                        <i class="far fa-comment"></i>
+                    </button>
+                    <button class="action-btn" data-bs-toggle="dropdown">
+                        <i class="far fa-paper-plane"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="copyPostLink('{{ post.pk }}')"><i class="fas fa-link me-2"></i>Copy Link</a></li>
+                        <li><a class="dropdown-item" href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}" target="_blank"><i class="fab fa-twitter me-2"></i>Share on Twitter</a></li>
+                        <li><a class="dropdown-item" href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" target="_blank"><i class="fab fa-facebook me-2"></i>Share on Facebook</a></li>
+                    </ul>
                 </div>
-            {% empty %}
-                <div class="text-center py-5">
-                    <p class="text-muted fw-light">No posts available.</p>
-                    <a href="{% url 'feed' %}" class="btn btn-outline-primary mt-2">Refresh Feed</a>
+                <div class="actions-right">
+                    <button class="action-btn bookmark-btn">
+                        <i class="far fa-bookmark"></i>
+                    </button>
                 </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+            </div>
 
+            <!-- Likes Count -->
+            <div class="likes-section">
+                <span class="likes-count">{{ post.likes_count }} like{% if post.likes_count != 1 %}s{% endif %}</span>
+            </div>
+
+            <!-- Caption -->
+            {% if post.caption %}
+            <div class="caption-section">
+                <a href="{% url 'profile' post.user.username %}" class="username">{{ post.user.username }}</a>
+                <span class="caption-text">{{ post.caption }}</span>
+            </div>
+            {% endif %}
+
+            <!-- View Comments -->
+            {% if post.comments.count > 0 %}
+            <button class="view-comments-btn" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                View all {{ post.comments.count }} comment{% if post.comments.count != 1 %}s{% endif %}
+            </button>
+            {% endif %}
+
+            <!-- Comments -->
+            <div class="collapse" id="comments-{{ post.id }}">
+                <div class="comments-section">
+                    {% for comment in post.comments.all|slice:":3" %}
+                    <div class="comment">
+                        <a href="{% url 'profile' comment.user.username %}" class="username">{{ comment.user.username }}</a>
+                        <span class="comment-text">{{ comment.text }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Timestamp -->
+            <div class="post-time">
+                {{ post.created_at|timesince }} ago
+            </div>
+
+            <!-- Add Comment -->
+            <div class="add-comment-section">
+                <form action="{% url 'add_comment' post.id %}" method="post" class="comment-form">
+                    {% csrf_token %}
+                    <button type="button" class="emoji-btn">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <input type="text" name="comment_text" class="comment-input" placeholder="Add a comment..." required>
+                    <button type="submit" class="post-comment-btn">Post</button>
+                </form>
+            </div>
+        </article>
+    {% empty %}
+        <div class="no-posts">
+            <i class="far fa-images"></i>
+            <p>No posts yet</p>
+            <p class="text-muted">Follow people to see their posts here</p>
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Double-tap to like
-    let lastTap = 0;
-    document.querySelectorAll('.card-body img, .card-body video').forEach(media => {
-        media.addEventListener('click', function(e) {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            if (tapLength < 300 && tapLength > 0) {
-                const postCard = this.closest('.post-card');
-                const likeForm = postCard.querySelector('.like-form');
-                const likeBtn = postCard.querySelector('.like-btn');
-                if (!likeBtn.classList.contains('liked')) {
-                    likeForm.submit();
-                }
-            }
-            lastTap = currentTime;
-        });
-    });
+// Double tap to like
+function handleDoubleTap(element) {
+    const postCard = element.closest('.post-card');
+    const likeForm = postCard.querySelector('.like-form');
+    const likeBtn = postCard.querySelector('.like-btn');
+    const likeAnimation = postCard.querySelector('.like-animation');
+    
+    // Show animation
+    likeAnimation.classList.add('active');
+    setTimeout(() => {
+        likeAnimation.classList.remove('active');
+    }, 1000);
+    
+    // Like if not already liked
+    if (!likeBtn.classList.contains('liked')) {
+        likeForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    }
+}
 
-    // Video controls
-    document.querySelectorAll('.post-video').forEach(video => {
-        video.addEventListener('click', function() {
-            if (this.paused) {
-                this.play();
-                this.closest('.video-container').querySelector('.video-play-btn i').className = 'fas fa-pause';
+// Video play/pause
+function toggleVideoPlay(video) {
+    if (video.paused) {
+        video.play();
+    } else {
+        video.pause();
+    }
+}
+
+// Toggle mute
+function toggleMute(event) {
+    event.stopPropagation();
+    const video = event.target.closest('.post-media').querySelector('video');
+    const icon = event.target.closest('.mute-btn').querySelector('i');
+    
+    video.muted = !video.muted;
+    icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+}
+
+// Like form handling
+document.querySelectorAll('.like-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const btn = this.querySelector('.like-btn');
+        const icon = btn.querySelector('i');
+        const postCard = this.closest('.post-card');
+        const likesCount = postCard.querySelector('.likes-count');
+        
+        fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.liked) {
+                btn.classList.add('liked');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
             } else {
-                this.pause();
-                this.closest('.video-container').querySelector('.video-play-btn i').className = 'fas fa-play';
+                btn.classList.remove('liked');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
             }
+            
+            // Update likes count
+            const count = data.likes_count || 0;
+            likesCount.textContent = `${count} like${count !== 1 ? 's' : ''}`;
         });
     });
+});
 
-    // Handle like button animations
-    document.querySelectorAll('.like-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = this.querySelector('.like-btn');
-            const icon = btn.querySelector('i');
-            const likesCount = this.closest('.post-card').querySelector('.post-likes');
-            const currentCount = parseInt(likesCount.textContent);
-
-            fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: new FormData(this)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.liked) {
-                    btn.classList.add('liked');
-                    icon.classList.replace('far', 'fas');
-                    likesCount.textContent = `${currentCount + 1} like${currentCount === 0 ? '' : 's'}`;
-                } else {
-                    btn.classList.remove('liked');
-                    icon.classList.replace('fas', 'far');
-                    likesCount.textContent = `${currentCount - 1} like${currentCount === 2 ? '' : 's'}`;
-                }
-            });
-        });
+// Bookmark button
+document.querySelectorAll('.bookmark-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const icon = this.querySelector('i');
+        icon.classList.toggle('far');
+        icon.classList.toggle('fas');
     });
+});
 
-    // Copy link functionality
-    window.copyPostLink = function(postId) {
-        const url = `${window.location.origin}/post/${postId}/`;
-        navigator.clipboard.writeText(url).then(() => {
-            alert('Link copied to clipboard!');
-        });
-    };
+// Copy link
+function copyPostLink(postId) {
+    const url = `${window.location.origin}/post/${postId}/`;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy link:', err);
+    });
+}
+
+// Auto-play videos when in viewport
+const observerOptions = {
+    threshold: 0.5
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.post-media video').forEach(video => {
+    observer.observe(video);
 });
 </script>
 {% endblock %}
