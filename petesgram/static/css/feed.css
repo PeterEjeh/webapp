@@ -1,18 +1,33 @@
 /* Instagram-like Feed Styles */
 .feed-container {
-  max-width: 470px !important;
+  max-width: 100%;
   margin: 0 auto;
+  padding: 0;
+}
+
+@media (min-width: 468px) {
+  .feed-container {
+    max-width: 468px;
+  }
 }
 
 .post-card {
   background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
   border-radius: 0;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 468px) {
+  .post-card {
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+  }
 }
 
 .post-header {
-  padding: 14px;
+  padding: 8px 12px;
   border-bottom: none;
 }
 
@@ -23,6 +38,22 @@
   object-fit: cover;
 }
 
+/* Image and video container styles */
+.card-body.p-0 {
+  background-color: #000;
+  width: 100%;
+  position: relative;
+  aspect-ratio: 1/1;
+}
+
+.card-body.p-0 img,
+.card-body.p-0 video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #000;
+}
+
 .post-username {
   font-size: 14px;
   font-weight: 600;
@@ -30,7 +61,7 @@
 }
 
 .post-actions {
-  padding: 6px 16px;
+  padding: 6px 12px;
 }
 
 .action-btn {
@@ -46,7 +77,17 @@
 }
 
 .action-btn i {
-  font-size: 24px;
+  font-size: 22px;
+}
+
+@media (max-width: 468px) {
+  .action-btn {
+    padding: 6px;
+  }
+  
+  .action-btn i {
+    font-size: 20px;
+  }
 }
 
 .like-btn.liked i {
