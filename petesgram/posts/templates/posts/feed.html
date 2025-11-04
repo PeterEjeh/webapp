@@ -1,30 +1,33 @@
 {% extends 'posts/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/feed.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h3 class="text-center mb-4 fw-bold text-primary"></h3>
-
-    <div class="row justify-content-center">
-        <div class="col-md-3 col-md-5">
+    <div class="feed-container">
+        <div class="posts-wrapper">
             {% for post in posts %}
-                <div class="card post-card mb-4 shadow-lg rounded-3 overflow-hidden animate__animated animate__fadeIn">
-                    <!-- Card Header (User Info & Follow) -->
-                    <div class="card-header post-header d-flex align-items-center justify-content-between p-3">
+                <article class="post-card post-loading">
+                    <!-- Post Header -->
+                    <div class="post-header d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
-                            <a href="{% url 'profile' post.user.username %}" class="d-flex align-items-center text-decoration-none text-dark">
-                                <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic-header rounded-circle me-3" alt="Profile">
-                                <h6 class="mb-0 fw-bold text-dark">@{{ post.user.username }}</h6>
+                            <a href="{% url 'profile' post.user.username %}" class="d-flex align-items-center text-decoration-none">
+                                <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic-header me-3" alt="Profile">
+                                <span class="post-username">{{ post.user.username }}</span>
                             </a>
                         </div>
 
                         {% if request.user != post.user %}
                             <form action="{% url 'follow_user' post.user.username %}" method="post" class="d-inline follow-form" data-username="{{ post.user.username }}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm follow-btn-custom {% if post.user in request.user.profile.following.all %}following{% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Follow/Unfollow">
+                                <button type="submit" class="action-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Follow/Unfollow">
                                     {% if post.user in request.user.profile.following.all %}
-                                        Following
+                                        <i class="fas fa-user-check"></i>
                                     {% else %}
-                                        Follow
+                                        <i class="fas fa-user-plus"></i>
                                     {% endif %}
                                 </button>
                             </form>
@@ -51,84 +54,83 @@
                         {% endif %}
                     </div>
 
-                    <!-- Post Actions & Caption -->
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="action-buttons d-flex align-items-center gap-2">
-                                <!-- Like Button -->
-                                <form action="{% url 'like_post' post.id %}" method="post" class="d-inline like-form" data-post-id="{{ post.id }}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-link text-danger p-0 me-2 like-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Like">
-                                        <i class="fas fa-heart {% if request.user in post.likes.all %}liked{% endif %}"></i>
-                                        <span class="likes-count ms-1">{{ post.likes_count }}</span>
-                                    </button>
-                                </form>
-
-                                <!-- Comment Button -->
-                                <a href="#comment-{{ post.id }}" class="btn btn-link text-secondary p-0 me-2 comment-btn" data-bs-toggle="collapse" data-bs-toggle="tooltip" data-bs-placement="top" title="View Comments">
-                                    <i class="far fa-comment"></i>
-                                    <span class="ms-1">{{ post.comments.count }}</span>
-                                </a>
-
-                                <!-- Share Button (Dropdown for Modern Sharing) -->
-                                <div class="dropdown">
-                                    <button class="btn btn-link text-secondary p-0 share-btn" type="button" id="shareDropdown{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false" data-bs-toggle="tooltip" data-bs-placement="top" title="Share Post">
-                                        <i class="fas fa-share"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="shareDropdown{{ post.id }}">
-                                        <li>
-                                            <button class="dropdown-item" onclick="copyPostLink({{ post.pk }})">
-                                                <i class="fas fa-copy me-2"></i> Copy Link
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}&text={{ post.caption|urlencode }}" target="_blank">
-                                                <i class="fab fa-twitter me-2"></i> Twitter
-                                            </a>
-                                            <a class="dropdown-item" href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" target="_blank">
-                                                <i class="fab fa-facebook me-2"></i> Facebook
-                                            </a>
-                                            <a class="dropdown-item" href="https://api.whatsapp.com/send?text={{ request.build_absolute_uri|urlencode }}" target="_blank">
-                                                <i class="fab fa-whatsapp me-2"></i> WhatsApp
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <small class="text-muted fw-light">{{ post.created_at|timesince }} ago</small>
-                        </div>
-
-                        <!-- Caption -->
-                        <p class="post-caption mb-2">
-                            <strong class="text-dark">
-                                <a href="{% url 'profile' post.user.username %}" class="text-decoration-none text-dark">@{{ post.user.username }}</a>
-                            </strong> {{ post.caption }}
-                        </p>
-
-                        <!-- Comments Section -->
-                        <div class="collapse" id="comment-{{ post.id }}">
-                            {% for comment in post.comments.all %}
-                                <div class="d-flex align-items-center mb-2">
-                                    <strong class="me-2">
-                                        <a href="{% url 'profile' comment.user.username %}" class="text-decoration-none text-dark">@{{ comment.user.username }}</a>
-                                    </strong>
-                                    <span class="text-muted flex-grow-1">{{ comment.text }}</span>
-                                    <small class="text-muted ms-2">{{ comment.created_at|timesince }} ago</small>
-                                </div>
-                            {% empty %}
-                                <p class="text-muted small mb-2">No comments yet.</p>
-                            {% endfor %}
-
-                            <!-- Comment Form -->
-                            <form action="{% url 'add_comment' post.id %}" method="post" class="mt-2">
+                    <!-- Post Actions -->
+                    <div class="post-actions d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <!-- Like Button -->
+                            <form action="{% url 'like_post' post.id %}" method="post" class="d-inline like-form" data-post-id="{{ post.id }}">
                                 {% csrf_token %}
-                                <div class="input-group input-group-sm">
-                                    <input type="text" name="comment_text" class="form-control form-control-sm" placeholder="Add a comment..." required>
-                                    <button type="submit" class="btn btn-primary btn-sm">Post</button>
-                                </div>
+                                <button type="submit" class="action-btn like-btn {% if request.user in post.likes.all %}liked{% endif %}" title="Like">
+                                    <i class="{% if request.user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                                </button>
                             </form>
+
+                            <!-- Comment Button -->
+                            <button class="action-btn" data-bs-toggle="collapse" data-bs-target="#comment-{{ post.id }}" title="Comment">
+                                <i class="far fa-comment"></i>
+                            </button>
+
+                            <!-- Share Button -->
+                            <button class="action-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Share">
+                                <i class="far fa-paper-plane"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <button class="dropdown-item" onclick="copyPostLink('{{ post.pk }}')">
+                                    <i class="fas fa-link me-2"></i> Copy Link
+                                </button>
+                                <a class="dropdown-item" href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}" target="_blank">
+                                    <i class="fab fa-twitter me-2"></i> Share on Twitter
+                                </a>
+                                <a class="dropdown-item" href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}" target="_blank">
+                                    <i class="fab fa-facebook me-2"></i> Share on Facebook
+                                </a>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Likes count -->
+                    <div class="post-likes">
+                        {{ post.likes_count }} like{% if post.likes_count != 1 %}s{% endif %}
+                    </div>
+
+                    <!-- Caption -->
+                    <div class="post-caption">
+                        <span class="post-username">{{ post.user.username }}</span>
+                        {{ post.caption }}
+                    </div>
+
+                    <!-- View all comments button -->
+                    {% if post.comments.count > 0 %}
+                    <button class="view-comments-btn action-btn" data-bs-toggle="collapse" data-bs-target="#comment-{{ post.id }}">
+                        View all {{ post.comments.count }} comment{% if post.comments.count != 1 %}s{% endif %}
+                    </button>
+                    {% endif %}
+
+                    <!-- Comments Section -->
+                    <div class="post-comments collapse" id="comment-{{ post.id }}">
+                        {% for comment in post.comments.all %}
+                        <div class="comment">
+                            <span class="post-username">{{ comment.user.username }}</span>
+                            {{ comment.text }}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Post time -->
+                    <div class="post-time">
+                        {{ post.created_at|timesince }} ago
+                    </div>
+
+                    <!-- Comment Form -->
+                    <form action="{% url 'add_comment' post.id %}" method="post" class="comment-form">
+                        {% csrf_token %}
+                        <div class="d-flex align-items-center">
+                            <input type="text" name="comment_text" class="comment-input" placeholder="Add a comment..." required>
+                            <button type="submit" class="action-btn">
+                                <i class="far fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             {% empty %}
                 <div class="text-center py-5">
@@ -140,13 +142,80 @@
     </div>
 </div>
 
-<!-- Additional Libraries -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    // Your existing JavaScript functions here...
+document.addEventListener('DOMContentLoaded', function() {
+    // Double-tap to like
+    let lastTap = 0;
+    document.querySelectorAll('.card-body img, .card-body video').forEach(media => {
+        media.addEventListener('click', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                const postCard = this.closest('.post-card');
+                const likeForm = postCard.querySelector('.like-form');
+                const likeBtn = postCard.querySelector('.like-btn');
+                if (!likeBtn.classList.contains('liked')) {
+                    likeForm.submit();
+                }
+            }
+            lastTap = currentTime;
+        });
+    });
+
+    // Video controls
+    document.querySelectorAll('.post-video').forEach(video => {
+        video.addEventListener('click', function() {
+            if (this.paused) {
+                this.play();
+                this.closest('.video-container').querySelector('.video-play-btn i').className = 'fas fa-pause';
+            } else {
+                this.pause();
+                this.closest('.video-container').querySelector('.video-play-btn i').className = 'fas fa-play';
+            }
+        });
+    });
+
+    // Handle like button animations
+    document.querySelectorAll('.like-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('.like-btn');
+            const icon = btn.querySelector('i');
+            const likesCount = this.closest('.post-card').querySelector('.post-likes');
+            const currentCount = parseInt(likesCount.textContent);
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    btn.classList.add('liked');
+                    icon.classList.replace('far', 'fas');
+                    likesCount.textContent = `${currentCount + 1} like${currentCount === 0 ? '' : 's'}`;
+                } else {
+                    btn.classList.remove('liked');
+                    icon.classList.replace('fas', 'far');
+                    likesCount.textContent = `${currentCount - 1} like${currentCount === 2 ? '' : 's'}`;
+                }
+            });
+        });
+    });
+
+    // Copy link functionality
+    window.copyPostLink = function(postId) {
+        const url = `${window.location.origin}/post/${postId}/`;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Link copied to clipboard!');
+        });
+    };
+});
 </script>
 {% endblock %}
