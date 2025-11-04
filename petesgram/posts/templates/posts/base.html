@@ -100,6 +100,12 @@
 
         // Listen for system theme changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
+
+        function toggleMute(button) {
+            const video = button.parentElement.querySelector('video');
+            video.muted = !video.muted;
+            button.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        }
     </script>
 </body>
 </html>
