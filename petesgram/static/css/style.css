@@ -94,6 +94,21 @@ body {
     font-weight: 500;
 }
 
+.follow-btn-custom {
+    background-color: var(--btn-primary);
+    color: #fff;
+    border-radius: 8px;
+    padding: 5px 15px;
+    font-weight: 600;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.follow-btn-custom.following {
+    background-color: var(--btn-outline);
+    color: var(--text-color);
+}
+
 .btn-outline-secondary, .btn-outline-dark {
     color: var(--text-color);
     border-color: var(--btn-outline);
@@ -197,6 +212,11 @@ form button:hover {
     border: 1px solid var(--btn-outline);
     border-radius: 10px;
     overflow: hidden;
+}
+
+.post-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--btn-outline);
 }
 
 .post-card img, .post-card video {
