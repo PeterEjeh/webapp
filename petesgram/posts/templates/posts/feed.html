@@ -9,10 +9,10 @@
             {% for post in posts %}
                 <div class="card post-card mb-4 shadow-lg rounded-3 overflow-hidden animate__animated animate__fadeIn">
                     <!-- Card Header (User Info & Follow) -->
-                    <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between p-3">
+                    <div class="card-header post-header d-flex align-items-center justify-content-between p-3">
                         <div class="d-flex align-items-center">
                             <a href="{% url 'profile' post.user.username %}" class="d-flex align-items-center text-decoration-none text-dark">
-                                <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic rounded-circle me-2" alt="Profile">
+                                <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic-header rounded-circle me-3" alt="Profile">
                                 <h6 class="mb-0 fw-bold text-dark">@{{ post.user.username }}</h6>
                             </a>
                         </div>
@@ -20,11 +20,11 @@
                         {% if request.user != post.user %}
                             <form action="{% url 'follow_user' post.user.username %}" method="post" class="d-inline follow-form" data-username="{{ post.user.username }}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-dark rounded-pill px-3 follow-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Follow/Unfollow">
+                                <button type="submit" class="btn btn-sm follow-btn-custom {% if post.user in request.user.profile.following.all %}following{% endif %}" data-bs-toggle="tooltip" data-bs-placement="top" title="Follow/Unfollow">
                                     {% if post.user in request.user.profile.following.all %}
-                                        <i class="fas fa-user-check me-1"></i> Following
+                                        Following
                                     {% else %}
-                                        <i class="fas fa-user-plus me-1"></i> Follow
+                                        Follow
                                     {% endif %}
                                 </button>
                             </form>
