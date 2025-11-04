@@ -5,18 +5,17 @@
   padding: 0;
 }
 
-@media (min-width: 468px) {
+@media (min-width: 768px) {
   .feed-container {
-    max-width: 468px;
+    max-width: 390px;
   }
 }
 
 .post-card {
   background-color: var(--card-bg);
   border: none;
-  border-bottom: 1px solid var(--border-color);
-  border-radius: 0;
-  margin-bottom: 12px;
+  margin-bottom: 1px;
+  width: 100%;
 }
 
 @media (min-width: 468px) {
@@ -27,15 +26,19 @@
 }
 
 .post-header {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-bottom: none;
+  height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 .profile-pic-header {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   object-fit: cover;
+  margin-right: 8px;
 }
 
 /* Image and video container styles */
@@ -43,14 +46,15 @@
   background-color: #000;
   width: 100%;
   position: relative;
-  aspect-ratio: 1/1;
+  aspect-ratio: 4/5;
+  margin: 0;
 }
 
 .card-body.p-0 img,
 .card-body.p-0 video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   background-color: #000;
 }
 
@@ -61,13 +65,16 @@
 }
 
 .post-actions {
-  padding: 6px 12px;
+  padding: 6px 10px;
+  height: 40px;
+  display: flex;
+  align-items: center;
 }
 
 .action-btn {
   background: transparent;
   border: none;
-  padding: 8px;
+  padding: 6px;
   color: var(--text-color);
   transition: opacity 0.2s;
 }
@@ -77,17 +84,7 @@
 }
 
 .action-btn i {
-  font-size: 22px;
-}
-
-@media (max-width: 468px) {
-  .action-btn {
-    padding: 6px;
-  }
-
-  .action-btn i {
-    font-size: 20px;
-  }
+  font-size: 18px;
 }
 
 .like-btn.liked i {
@@ -97,27 +94,42 @@
 
 .post-likes {
   font-weight: 600;
-  font-size: 14px;
-  padding: 0 16px;
+  font-size: 13px;
+  padding: 0 10px;
+  color: var(--text-color);
+  margin-top: -4px;
+}
+
+.post-username {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-color);
 }
 
 .post-caption {
-  padding: 0 16px;
-  margin-bottom: 8px;
-  font-size: 14px;
+  padding: 0 10px;
+  margin-bottom: 4px;
+  font-size: 13px;
   color: var(--text-color);
+  line-height: 1.2;
 }
 
 .post-comments {
-  padding: 0 16px;
-  margin-top: 8px;
+  padding: 0 10px;
+  margin-top: 4px;
+}
+
+.comment {
+  font-size: 13px;
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .comment-form {
   border-top: 1px solid var(--border-color);
-  padding: 16px;
-  margin-top: 8px;
+  padding: 10px;
+  margin-top: 4px;
+  height: 40px;
 }
 
 .comment-input {
@@ -126,14 +138,15 @@
   outline: none;
   color: var(--text-color);
   width: 100%;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .post-time {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--secondary-text);
-  padding: 0 16px;
-  margin-bottom: 16px;
+  padding: 0 10px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
 }
 
 @keyframes likeAnimation {
