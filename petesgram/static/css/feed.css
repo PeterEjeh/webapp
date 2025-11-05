@@ -50,6 +50,7 @@ body {
     border-radius: 8px;
     margin-bottom: 24px;
     overflow: hidden;
+    max-width: 100%;
 }
 
 @media (max-width: 767px) {
@@ -59,6 +60,7 @@ body {
         border-right: none;
         margin-bottom: 0;
         border-bottom: none;
+        max-width: 100%;
     }
 }
 
@@ -85,6 +87,7 @@ body {
     object-fit: cover;
     margin-right: 12px;
     flex-shrink: 0;
+    display: block;
 }
 
 .username {
@@ -119,16 +122,39 @@ body {
     position: relative;
     width: 100%;
     background-color: #000000;
-    max-height: 600px;
     overflow: hidden;
     margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    max-height: 585px; /* Instagram's max height for posts */
 }
 
 .media-content {
     width: 100%;
     height: auto;
+    max-width: 100%;
+    max-height: 585px;
+    object-fit: contain; /* Show full image without cropping */
     display: block;
     user-select: none;
+}
+
+/* For videos, maintain aspect ratio */
+.post-media video.media-content {
+    object-fit: contain;
+}
+
+/* On mobile, allow taller images but still reasonable */
+@media (max-width: 767px) {
+    .post-media {
+        max-height: 800px;
+    }
+    
+    .media-content {
+        max-height: 800px;
+    }
 }
 
 /* Mute Button for Videos */
