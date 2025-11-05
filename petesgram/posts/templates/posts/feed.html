@@ -136,15 +136,32 @@
     <div class="feed-container">
         {% for post in posts %}
         <article class="post-card">
-            <!-- Post Header -->
+            <!-- Post Header with Media Preview -->
             <div class="post-header">
-                <a href="{% url 'profile' post.user.username %}" class="user-info">
-                    <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic" alt="{{ post.user.username }}">
-                    <span class="username">{{ post.user.username }}</span>
-                </a>
-                <button class="more-options-btn" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-ellipsis-h"></i>
-                </button>
+                <div class="header-left">
+                    <a href="{% url 'profile' post.user.username %}" class="user-info">
+                        <img src="{{ post.user.profile.profile_picture.url }}" class="profile-pic" alt="{{ post.user.username }}">
+                        <div class="user-details">
+                            <span class="username">{{ post.user.username }}</span>
+                            <span class="post-info">Original audio</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="header-right">
+                    <!-- Media Preview Thumbnail -->
+                    <div class="media-preview">
+                        {% if post.video %}
+                            <video class="preview-thumbnail" muted>
+                                <source src="{{ post.video.url }}" type="video/mp4">
+                            </video>
+                        {% elif post.image %}
+                            <img src="{{ post.image.url }}" class="preview-thumbnail" alt="Preview">
+                        {% endif %}
+                    </div>
+                    <button class="more-options-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
                 <ul class="dropdown-menu dropdown-menu-end">
                     {% if request.user == post.user %}
                         <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
